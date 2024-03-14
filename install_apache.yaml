@@ -1,21 +1,30 @@
 ---
 - hosts: all
   become: true
+  gather_facts: false
   tasks:
 
-  - name : install updates (fedora)
-    tags: always
-    dnf:
-      update_only: yes
-      update_cache: yes
-    when: ansible_distribution == "fedora"
+  # - name: restart a particular instance by its ID
+  #   amazon.aws.ec2_instance:
+  #     state: stopped
+  #     instance_ids:
+  #       - i-0c9b828562fa5091f
+  #       - i-0759dfab4ebd9362b
+  #       - i-05a8f7bb714c5759b
+  
+  # - name : install updates (fedora)
+  #   tags: always
+  #   dnf:
+  #     update_only: yes
+  #     update_cache: yes
+  #   when: ansible_distribution == "fedora"
 
-  - name : install updates (Ubuntu)
-    tags: always
-    ansible.builtin.apt:
-      upgrade: dist
-      update_cache: yes
-    when: ansible_distribution == "Ubuntu"
+  # - name : install updates (Ubuntu)
+  #   tags: always
+  #   ansible.builtin.apt:
+  #     upgrade: dist
+  #     update_cache: yes
+  #   when: ansible_distribution == "Ubuntu"
 
 - hosts: web_servers
   become: true
@@ -27,6 +36,14 @@
       name: httpd >= 2.4
       state: present
     when: ansible_pkg_mgr == 'dnf'
+  
+  - name: Copy file with owner and permissions
+    ansible.builtin.copy:
+      src: index.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: '0644'
 
 - hosts: db_servers
   become: true
@@ -45,3 +62,21 @@
       name: mariadb-server
       state: latest
     when: ansible_distribution == "Ubuntu"
+
+- hosts: workstation
+  become: true
+  tasks:
+
+  - name: install unzip
+    ansible.builtin.package:
+     name: unzip
+
+  - name: Install terraform
+    ansible.builtin.unarchive:
+      src: https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
+    
