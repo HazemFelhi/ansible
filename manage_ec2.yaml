@@ -1,0 +1,42 @@
+---
+- hosts: jenkins_servers
+  become: true
+  gather_facts: false
+  tasks:
+  - name: Install Python
+    package:
+      name: python3
+      state: present
+
+  - name: Install pip
+    package:
+      name: python3-pip
+      state: present
+
+  - name: Install botocore and boto3
+    pip:
+      name:
+        - botocore
+        - boto3
+      state: present
+      executable: pip3
+
+  - name: stop a particular instance by its ID
+    amazon.aws.ec2_instance:
+      region: eu-north-1
+      state: stopped
+      instance_ids:
+        - i-08b547e64611570e9
+
+
+  # - name: restart a particular instance by its ID
+  #   amazon.aws.ec2_instance:
+  #     state: restarted
+  #     instance_ids:
+  #       - i-08b547e64611570e9
+
+
+
+  
+
+
